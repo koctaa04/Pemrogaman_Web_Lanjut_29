@@ -12,12 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('t_penjualan_detail', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('penjualan_id')->constrained('t_penjualan')->onDelete('cascade');
-            $table->foreignId('barang_id')->constrained('m_barang')->onDelete('cascade');
+            $table->id('detail_id');
+            $table->unsignedBigInteger('penjualan_id')->index(); // Indexing FK
+            $table->unsignedBigInteger('barang_id')->index(); // Indexing FK
             $table->integer('harga');
             $table->integer('jumlah');
             $table->timestamps();
+
+            // Foreign key yang merujuk ke kolom penjualan_id di tabel t_penjualan 
+            $table->foreign('penjualan_id')->references('penjualan_id')->on('t_penjualan');
+            // Foreign key yang merujuk ke kolom barang_id di tabel m_barang
+            $table->foreign('barang_id')->references('barang_id')->on('m_barang');
         });
     }
 

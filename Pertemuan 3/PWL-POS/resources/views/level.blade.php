@@ -21,7 +21,7 @@
             </tr>
             @foreach($data as $d)
             <tr>
-                <td>{{ $d->id }}</td>
+                <td>{{ $d->level_id }}</td>
                 <td>{{ $d->level_kode }}</td>
                 <td>{{ $d->level_nama }}</td>
             </tr>
