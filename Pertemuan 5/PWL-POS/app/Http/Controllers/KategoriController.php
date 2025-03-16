@@ -9,21 +9,47 @@ use Illuminate\Support\Facades\DB;
 
 class KategoriController extends Controller
 {
-    public function index(KategoriDataTable $dataTable){
+    public function index(KategoriDataTable $dataTable)
+    {
         return $dataTable->render('kategori.index');
     }
 
-    public function create(){
+    public function create()
+    {
         return view('kategori.create');
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         // dd($request->all());
         KategoriModel::create([
             'kategori_kode' => $request->kategori_id,
             'kategori_nama' => $request->kategori_nama
         ]);
         return redirect()->route('kategori.index');
+    }
+
+
+    public function edit($id)
+    {
+        $kategori = KategoriModel::findOrFail($id);
+        return view('kategori.edit', compact('kategori'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $kategori = KategoriModel::findOrFail($id);
+        $kategori->update([
+            'kategori_kode' => $request->kategori_kode,
+            'kategori_nama' => $request->kategori_nama
+        ]);
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        KategoriModel::findOrFail($id)->delete();
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus');
     }
 }
 

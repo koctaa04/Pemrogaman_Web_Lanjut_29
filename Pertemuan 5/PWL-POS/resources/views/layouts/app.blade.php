@@ -38,6 +38,27 @@
 @stop
 {{-- Add common Javascript/Jquery code --}}
 @push('js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete(event, form) {
+            event.preventDefault();
+            Swal.fire({
+                title: "Apakah Anda yakin?",
+                text: "Data ini akan dihapus secara permanen!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Ya, Hapus!",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    </script>
+
     <script src="https://cdn.datatables.net/2.0.2/js/dataTables.js"></script>
 @endpush
 @stack('scripts')
@@ -47,12 +68,12 @@
     <style type="text/css">
         {{-- You can add AdminLTE customizations here --}}
         /*
-     .card-header {
-     border-bottom: none;
-     }
-     .card-title {
-     font-weight: 600;
-     }
-     */
+             .card-header {
+             border-bottom: none;
+             }
+             .card-title {
+             font-weight: 600;
+             }
+             */
     </style>
 @endpush
