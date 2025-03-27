@@ -24,7 +24,7 @@ Route::get('/', [WelcomeController::class, 'index']);
 
 Route::group(['prefix' => 'user'], function () {
     Route::get('/', [UserController::class, 'index']);      // Menampilkan halaman awal user
-    Route::get('/list', [UserController::class, 'list']);   // Menampilkan daftar user dalam bentuk json untuk datatables
+    Route::post('/list', [UserController::class, 'list']);   // Menampilkan daftar user dalam bentuk json untuk datatables
     Route::get('/create', [UserController::class, 'create']);   // Menampilkan halaman tambah user
     Route::post('/', [UserController::class, 'store']);   // Menyimpan data user baru
     Route::get('/{id}', [UserController::class, 'show']);   // Menampilkan halaman detail user
