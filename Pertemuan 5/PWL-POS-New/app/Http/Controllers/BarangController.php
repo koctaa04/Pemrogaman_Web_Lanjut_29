@@ -178,7 +178,7 @@ class BarangController extends Controller
     {
         $request->validate([
             'kategori_id'  => 'required|integer',
-            'barang_kode'  => 'required|string|max:10|unique:m_barang,barang_kode,' . $id . ',barang_id',            
+            'barang_kode'  => 'required|string|max:10|unique:m_barang,barang_kode,' . $id . ',barang_id',
             'barang_nama'  => 'required|string|max:100',
             'harga_jual'   => 'required|numeric',
             'harga_beli'   => 'required|numeric'
