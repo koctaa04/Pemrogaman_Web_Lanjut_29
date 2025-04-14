@@ -20,7 +20,12 @@ use App\Http\Controllers\AuthController;
 |
 */
 
+
 Route::pattern('id', '[0-9]+');
+
+Route::get('register', [AuthController::class, 'register'])->name('register');
+Route::post('register', [AuthController::class, 'postRegister']);
+
 Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth');
@@ -79,9 +84,6 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // JOBSHEET 5 TUGAS PRAKTIKUM
-    // Sebenarnya bisa menggunakan resource, tapi ini biar lebih jelas
-
     // Level (MNG, ADM)
     Route::middleware(['authorize:ADM,MNG'])->group(function () {
         Route::group(['prefix' => 'level'], function () {
@@ -125,52 +127,59 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}', [BarangController::class, 'destroy']); // menghapus data barang
         });
     });
-
-    // // Stok management (MNG, ADM can access)
-    // Route::middleware(['authorize:ADM,MNG,KSR'])->group(function () {
-    //     Route::group(['prefix' => 'stok'], function () {
-    //         Route::get('/', [StokController::class, 'index']);          // menampilkan halaman awal stok
-    //         Route::post('/list', [StokController::class, 'list']);      // menampilkan data stok dalam bentuk json untuk datatables
-    //         Route::get('/create', [StokController::class, 'create']);   // menampilkan halaman form tambah stok
-    //         Route::post('/', [StokController::class, 'store']);         // menyimpan data stok baru
-    //         // JOBSHEET 6
-    //         Route::get('/create_ajax', [StokController::class, 'create_ajax']);
-    //         Route::post('/ajax', [StokController::class, 'store_ajax']);
-    //         Route::get('/{id}/edit_ajax', [StokController::class, 'edit_ajax']);
-    //         Route::put('/{id}/update_ajax', [StokController::class, 'update_ajax']);
-    //         Route::get('/{id}/delete_ajax', [StokController::class, 'confirm_ajax']);
-    //         Route::delete('/{id}/delete_ajax', [StokController::class, 'delete_ajax']);
-
-    //         Route::get('/{id}', [StokController::class, 'show']);       // menampilkan detail stok
-    //         Route::get('/{id}/edit', [StokController::class, 'edit']);  // menampilkan halaman form edit stok
-    //         Route::put('/{id}', [StokController::class, 'update']);     // menyimpan perubahan data stok
-    //         Route::delete('/{id}', [StokController::class, 'destroy']); // menghapus data stok
-    //     });
-    // });
-
-    // // Supplier management (MNG, ADM can access)
-    // Route::middleware(['authorize:ADM,MNG,KSR'])->group(function () {
-    //     Route::group(['prefix' => 'supplier'], function () {
-    //         Route::get('/', [SupplierController::class, 'index']);         // Menampilkan halaman awal supplier
-    //         Route::post('/list', [SupplierController::class, 'list']);     // Menampilkan data supplier dalam bentuk JSON untuk datatables
-    //         Route::get('/create', [SupplierController::class, 'create']);  // Menampilkan halaman form tambah supplier
-    //         Route::post('/', [SupplierController::class, 'store']);        // Menyimpan data supplier baru
-
-    //         // AJAX Routes
-    //         Route::get('/create_ajax', [SupplierController::class, 'create_ajax']);
-    //         Route::post('/ajax', [SupplierController::class, 'store_ajax']);
-    //         Route::get('/{id}/edit_ajax', [SupplierController::class, 'edit_ajax']);
-    //         Route::put('/{id}/update_ajax', [SupplierController::class, 'update_ajax']);
-    //         Route::get('/{id}/delete_ajax', [SupplierController::class, 'confirm_ajax']);
-    //         Route::delete('/{id}/delete_ajax', [SupplierController::class, 'delete_ajax']);
-
-    //         Route::get('/{id}', [SupplierController::class, 'show']);       // Menampilkan detail supplier
-    //         Route::get('/{id}/edit', [SupplierController::class, 'edit']);  // Menampilkan halaman form edit supplier
-    //         Route::put('/{id}', [SupplierController::class, 'update']);     // Menyimpan perubahan data supplier
-    //         Route::delete('/{id}', [SupplierController::class, 'destroy']); // Menghapus data supplier
-    //     });
-    // });
 });
+// // Stok management (MNG, ADM can access)
+// Route::middleware(['authorize:ADM,MNG,KSR'])->group(function () {
+//     Route::group(['prefix' => 'stok'], function () {
+//         Route::get('/', [StokController::class, 'index']);          // menampilkan halaman awal stok
+//         Route::post('/list', [StokController::class, 'list']);      // menampilkan data stok dalam bentuk json untuk datatables
+//         Route::get('/create', [StokController::class, 'create']);   // menampilkan halaman form tambah stok
+//         Route::post('/', [StokController::class, 'store']);         // menyimpan data stok baru
+//         // JOBSHEET 6
+//         Route::get('/create_ajax', [StokController::class, 'create_ajax']);
+//         Route::post('/ajax', [StokController::class, 'store_ajax']);
+//         Route::get('/{id}/edit_ajax', [StokController::class, 'edit_ajax']);
+//         Route::put('/{id}/update_ajax', [StokController::class, 'update_ajax']);
+//         Route::get('/{id}/delete_ajax', [StokController::class, 'confirm_ajax']);
+//         Route::delete('/{id}/delete_ajax', [StokController::class, 'delete_ajax']);
+
+//         Route::get('/{id}', [StokController::class, 'show']);       // menampilkan detail stok
+//         Route::get('/{id}/edit', [StokController::class, 'edit']);  // menampilkan halaman form edit stok
+//         Route::put('/{id}', [StokController::class, 'update']);     // menyimpan perubahan data stok
+//         Route::delete('/{id}', [StokController::class, 'destroy']); // menghapus data stok
+//     });
+// });
+
+// // Supplier management (MNG, ADM can access)
+// Route::middleware(['authorize:ADM,MNG,KSR'])->group(function () {
+//     Route::group(['prefix' => 'supplier'], function () {
+//         Route::get('/', [SupplierController::class, 'index']);         // Menampilkan halaman awal supplier
+//         Route::post('/list', [SupplierController::class, 'list']);     // Menampilkan data supplier dalam bentuk JSON untuk datatables
+//         Route::get('/create', [SupplierController::class, 'create']);  // Menampilkan halaman form tambah supplier
+//         Route::post('/', [SupplierController::class, 'store']);        // Menyimpan data supplier baru
+
+//         // AJAX Routes
+//         Route::get('/create_ajax', [SupplierController::class, 'create_ajax']);
+//         Route::post('/ajax', [SupplierController::class, 'store_ajax']);
+//         Route::get('/{id}/edit_ajax', [SupplierController::class, 'edit_ajax']);
+//         Route::put('/{id}/update_ajax', [SupplierController::class, 'update_ajax']);
+//         Route::get('/{id}/delete_ajax', [SupplierController::class, 'confirm_ajax']);
+//         Route::delete('/{id}/delete_ajax', [SupplierController::class, 'delete_ajax']);
+
+//         Route::get('/{id}', [SupplierController::class, 'show']);       // Menampilkan detail supplier
+//         Route::get('/{id}/edit', [SupplierController::class, 'edit']);  // Menampilkan halaman form edit supplier
+//         Route::put('/{id}', [SupplierController::class, 'update']);     // Menyimpan perubahan data supplier
+//         Route::delete('/{id}', [SupplierController::class, 'destroy']); // Menghapus data supplier
+//     });
+// });
+
+
+
+
+
+
+
+
 
 
 
