@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\UserModel;
 use App\Models\LevelModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
@@ -299,6 +301,83 @@ class UserController extends Controller
             // Jika terjadi error ketika menghapus data, redirect kembali ke halaman dengan membawa pesan error
             return redirect('/user')->with('error', 'Data user gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
         }
+    }
+
+    public function profile()
+    {
+        // Ambil user yang sedang login sebagai instance model Eloquent
+        $user = auth()->user();
+
+        $breadcrumb = (object) [
+            'title' => 'Profil Saya',
+            'list' => ['Home', 'Profil']
+        ];
+
+        $page = (object) [
+            'title' => 'Profil Pengguna'
+        ];
+
+        $activeMenu = ''; // set jika diperlukan
+
+        return view('user.profile', compact('user', 'breadcrumb', 'page', 'activeMenu'));
+    }
+
+    public function profileAjax()
+    {
+        $user = Auth::user(); // ambil data user
+        return view('user.edit_profile', compact('user'));
+    }
+
+    public function profile_update(Request $request)
+    {
+        // Melakukan validasi input file
+        $validator = Validator::make($request->all(), [
+            'user_id'       => 'required|exists:m_user,user_id',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Validasi gagal.',
+                'errors'  => $validator->errors()
+            ]);
+        }
+
+        // Mencari data user berdasarkan ID yang dikirim (dari hidden field)
+        $user = UserModel::find($request->input('user_id'));
+
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'User tidak ditemukan.'
+            ]);
+        }
+
+        // Jika ada file foto profil yang diunggah
+        if ($request->hasFile('profile_photo') && $request->file('profile_photo')->isValid()) {
+            $file = $request->file('profile_photo');
+            $filename = $user->user_id . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+            // Hapus file lama jika ada
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+
+            // Simpan file baru
+            $path = $file->storeAs('profiles', $filename, 'public');
+            $user->profile_photo = $path;
+            $user->save();
+        }
+
+
+        // Simpan perubahan ke database
+        $user->save();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Profil berhasil diperbarui'
+        ]);
     }
 
 

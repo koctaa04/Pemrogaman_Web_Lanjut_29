@@ -1,4 +1,14 @@
 <div class="sidebar">
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+            <img src="{{ Auth::check() && Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : asset('adminlte/dist/img/user2-160x160.jpg') }}"
+                class="img-circle elevation-2"
+                alt="User Image">
+        </div>
+        <div class="info">
+            <a href="{{ url('/profile') }}" class="d-block">{{ Auth::user()->nama ?? 'Alexander Pierce' }}</a>
+        </div>
+    </div>
     <!-- SidebarSearch Form -->
     <div class="form-inline mt-2">
         <div class="input-group" data-widget="sidebar-search">
@@ -65,6 +75,12 @@
                 </a>
             </li>
             <li class="nav-header">Lainnya</li>
+            <li class="nav-item">
+                <a href="{{ url('/profile') }}" class="nav-link {{ $activeMenu == 'profile' ? 'active' : '' }} ">
+                    <i class="nav-icon fas fa-user-circle"></i>
+                    <p>Profil</p>
+                </a>
+            </li>
             <li class="nav-item">
                 <form id="logout-form" action="{{ url('logout') }}" method="POST" style="display: none;">
                     @csrf
