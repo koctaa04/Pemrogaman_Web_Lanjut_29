@@ -29,49 +29,35 @@ class UserController extends Controller
     // Ambil data user dalam bentuk json untuk datatables
     public function list(Request $request)
     {
-        $users = UserModel::select('user_id', 'username', 'nama', 'level_id')->with('level');
+        $users = UserModel::select('user_id', 'username', 'nama', 'level_id')
+            ->with('level');
 
-        // Filter data berdasarkan level
+        // Filter data berdasarkan level_id
         if ($request->level_id) {
             $users->where('level_id', $request->level_id);
         }
 
         return DataTables::of($users)
+
             // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
             ->addIndexColumn()
-            // Menambahkan kolom aksi
-            ->addColumn('aksi', function ($user) {
-                $btn  = '<a href="' . url('/user/' . $user->user_id) . '" class="btn btn-info btn-sm">Detail</a> ';
-                $btn .= '<a href="' . url('/user/' . $user->user_id . '/edit') . '" class="btn btn-warning btn-sm">Edit</a> ';
-                $btn .= '<form class="d-inline-block" method="POST" action="' . url('/user/' . $user->user_id) . '">'
-                    . csrf_field()
-                    . method_field('DELETE')
-                    . '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button>'
-                    . '</form>';
+            ->addColumn('aksi', function ($user) { // menambahkan kolom aksi
+
+                $btn = '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
             ->rawColumns(['aksi']) // memberitahu bahwa kolom aksi adalah html
             ->make(true);
     }
 
-    // Menampilkan detail user
-    public function show(string $id)
+    public function show_ajax($id)
     {
-        $user = UserModel::with('level')->find($id);
-
-        $breadcrumb = (object) [
-            'title' => 'Detail User',
-            'list' => ['Home', 'User', 'Detail']
-        ];
-
-        $page = (object) [
-            'title' => 'Detail user'
-        ];
-
-        $activeMenu = 'user'; // set menu yang sedang aktif
-
-        return view('user.show', ['breadcrumb' => $breadcrumb, 'page' => $page, 'user' => $user, 'activeMenu' => $activeMenu]);
+        $user = UserModel::with('level')->findOrFail($id);
+        return view('user.show_ajax', compact('user'));
     }
+    
     public function create_ajax()
     {
         $level = LevelModel::select('level_id', 'level_nama')->get();
