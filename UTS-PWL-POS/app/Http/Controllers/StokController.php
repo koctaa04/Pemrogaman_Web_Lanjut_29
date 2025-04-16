@@ -40,21 +40,6 @@ class StokController extends Controller
 
         return DataTables::of($stoks)
             ->addIndexColumn()
-            // ->addColumn('kode_barang', function ($stok) {
-            //     return $stok->barang->barang_kode ?? '-';
-            // })
-            // ->addColumn('nama_barang', function ($stok) {
-            //     return $stok->barang->barang_nama ?? '-';
-            // })
-            // ->addColumn('supplier', function ($stok) {
-            //     return $stok->supplier->supplier_nama ?? '-';
-            // })
-            // ->addColumn('jumlah', function ($stok) {
-            //     return $stok->stok_jumlah;
-            // })
-            // ->addColumn('tanggal', function ($stok) {
-            //     return date('d-m-Y', strtotime($stok->stok_tanggal));
-            // })
             ->addColumn('aksi', function ($stok) {
                 $btn = '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/stok/' . $stok->stok_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
@@ -63,5 +48,11 @@ class StokController extends Controller
             })
             ->rawColumns(['aksi'])
             ->make(true);
+    }
+    public function show_ajax($id)
+    {
+        $stok = StokModel::with(['barang', 'user', 'supplier'])->find($id);
+        return view('user.show_ajax', compact('stok'));
+        
     }
 }
