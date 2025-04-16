@@ -82,3 +82,15 @@ Route::group(['prefix' => 'barang'], function () {
     Route::get('/{id}/delete_ajax', [BarangController::class, 'confirm_ajax']);   // Untuk tampilkan form confirm delete barang Ajax
     Route::delete('/{id}/delete_ajax', [BarangController::class, 'delete_ajax']); // Untuk hapus data barang Ajax
 });
+
+Route::group(['prefix' => 'stok'], function () {
+    Route::get('/', [StokController::class, 'index']);                          // Menampilkan halaman awal stok
+    Route::post('/list', [StokController::class, 'list']);                      // Menampilkan daftar stok dalam bentuk json untuk datatables
+    Route::get('/create_ajax', [StokController::class, 'create_ajax']);         // Menampilkan halaman tambah stok dengan Ajax
+    Route::post('/ajax', [StokController::class, 'store_ajax']);                // menyimpan data stok dengan Ajax
+    Route::get('/{id}/show_ajax', [StokController::class, 'show_ajax']);        // menampilkan detail data stok dengan Ajax
+    Route::get('/{id}/edit_ajax', [StokController::class, 'edit_ajax']);        // menampilkan halaman form edit stok Ajax
+    Route::put('/{id}/update_ajax', [StokController::class, 'update_ajax']);    // menyimpan perubahan data stok Ajax
+    Route::get('/{id}/delete_ajax', [StokController::class, 'confirm_ajax']);   // Untuk tampilkan form confirm delete stok Ajax
+    Route::delete('/{id}/delete_ajax', [StokController::class, 'delete_ajax']); // Untuk hapus data stok Ajax
+});
