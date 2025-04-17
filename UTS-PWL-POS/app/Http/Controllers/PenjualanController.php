@@ -64,10 +64,11 @@ class PenjualanController extends Controller
             ->make(true);
     }
 
-    public function show_ajax($id)
+    public function show_ajax(string $id)
     {
-        
-        $penjualan = PenjualanModel::with(['barang', 'user', 'penjualan_detail'])->find($id);
-        return view('penjualan.show_ajax', compact('stok'));
+        $penjualan = PenjualanModel::with(['user', 'detailPenjualan'])->find($id);
+        $penjualan->total_bayar = $penjualan->detailPenjualan->sum(fn($d) => $d->harga * $d->jumlah);
+
+        return view('penjualan.show_ajax', ['penjualan' => $penjualan]);
     }
 }

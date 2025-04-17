@@ -18,13 +18,13 @@ class UserSeeder extends Seeder
             [
                 'level_id' => 1, // Admin
                 'username' => 'admin',
-                'nama' => 'Administrator',
+                'nama' => 'Yefta Octa',
                 'password' => Hash::make('123456'),
             ],
             [
                 'level_id' => 2, // Kasir/Staff
                 'username' => 'staff',
-                'nama' => 'Staff/Kasir',
+                'nama' => 'Shamil',
                 'password' => Hash::make('123456'),
             ],
         ]);

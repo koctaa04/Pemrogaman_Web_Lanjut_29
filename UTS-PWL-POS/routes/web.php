@@ -102,7 +102,7 @@ Route::group(['prefix' => 'penjualan'], function () {
     Route::post('/list', [PenjualanController::class, 'list']);                      // Menampilkan daftar penjualan dalam bentuk json untuk datatables
     // Route::get('/create_ajax', [PenjualanController::class, 'create_ajax']);         // Menampilkan halaman tambah penjualan dengan Ajax
     // Route::post('/ajax', [PenjualanController::class, 'store_ajax']);                // menyimpan data penjualan dengan Ajax
-    // Route::get('/{id}/show_ajax', [PenjualanController::class, 'show_ajax']);        // menampilkan detail data penjualan dengan Ajax
+    Route::get('/{id}/show_ajax', [PenjualanController::class, 'show_ajax']);        // menampilkan detail data penjualan dengan Ajax
     // Route::get('/{id}/edit_ajax', [PenjualanController::class, 'edit_ajax']);        // menampilkan halaman form edit penjualan Ajax
     // Route::put('/{id}/update_ajax', [PenjualanController::class, 'update_ajax']);    // menyimpan perubahan data penjualan Ajax
     // Route::get('/{id}/delete_ajax', [PenjualanController::class, 'confirm_ajax']);   // Untuk tampilkan form confirm delete penjualan Ajax

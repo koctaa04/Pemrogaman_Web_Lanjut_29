@@ -15,19 +15,23 @@
             @else
                 <table class="table table-bordered table-striped table-hover table-sm">
                     <tr>
-                        <th>ID Penjualan</th>
-                        <td>{{ $penjualan->penjualan_id }}</td>
+                        <th>Kode Penjualan</th>
+                        <td>{{ $penjualan->penjualan_kode }}</td>
                     </tr>
                     <tr>
                         <th>Tanggal</th>
                         <td>{{ \Carbon\Carbon::parse($penjualan->tanggal)->format('d-m-Y') }}</td>
                     </tr>
                     <tr>
+                        <th>Nama Penjual</th>
+                        <td>{{ $penjualan->user->nama }}</td>
+                    </tr>
+                    <tr>
                         <th>Nama Pembeli</th>
                         <td>{{ $penjualan->pembeli }}</td>
                     </tr>
                     <tr>
-                        <th>Total Bayar</th>
+                        <th>Total Harga</th>
                         <td>{{ number_format($penjualan->total_bayar, 0, ',', '.') }}</td>
                     </tr>
 
@@ -43,7 +47,7 @@
                                 <th>Nama Barang</th>
                                 <th>Harga</th>
                                 <th>Jumlah</th>
-                                <th>Subtotal</th>
+                                <th>Total Harga</th>
                             </tr>
                         </thead>
                         <tbody>
