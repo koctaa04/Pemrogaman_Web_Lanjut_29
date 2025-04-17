@@ -23,7 +23,7 @@ class PenjualanSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'user_id'           => 2, // Merujuk ke user dengan id 3
+                'user_id'           => 2, // Merujuk ke user dengan id 2
                 'pembeli'           => 'Siti Aminah',
                 'penjualan_kode'    => 'PNJ02',
                 'penjualan_tanggal' => now(),
@@ -31,7 +31,7 @@ class PenjualanSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'user_id'           => 2, // Merujuk ke user dengan id 3
+                'user_id'           => 2, // Merujuk ke user dengan id 2
                 'pembeli'           => 'Agus Salim',
                 'penjualan_kode'    => 'PNJ03',
                 'penjualan_tanggal' => now(),
@@ -47,7 +47,7 @@ class PenjualanSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'user_id'           => 2, // Merujuk ke user dengan id 3
+                'user_id'           => 2, // Merujuk ke user dengan id 2
                 'pembeli'           => 'Ahmad Fauzi',
                 'penjualan_kode'    => 'PNJ05',
                 'penjualan_tanggal' => now(),
@@ -63,7 +63,7 @@ class PenjualanSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'user_id'           => 2, // Merujuk ke user dengan id 3
+                'user_id'           => 2, // Merujuk ke user dengan id 2
                 'pembeli'           => 'Joko Susilo',
                 'penjualan_kode'    => 'PNJ07',
                 'penjualan_tanggal' => now(),
@@ -79,7 +79,7 @@ class PenjualanSeeder extends Seeder
                 'updated_at'        => now(),
             ],
             [
-                'user_id'           => 2, // Merujuk ke user dengan id 3
+                'user_id'           => 2, // Merujuk ke user dengan id 2
                 'pembeli'           => 'Hendra Wijaya',
                 'penjualan_kode'    => 'PNJ09',
                 'penjualan_tanggal' => now(),
