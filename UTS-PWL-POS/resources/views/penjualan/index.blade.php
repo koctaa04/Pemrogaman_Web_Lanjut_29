@@ -15,6 +15,8 @@
 
             {{-- Filter --}}
             <div class="row mb-3">
+                <label class="col-1 control-label col-form-label">Filter:</label>
+
                 <div class="col-3">
                     <select class="form-control" id="user_id" name="user_id">
                         <option value="">- Semua Penjual -</option>
@@ -22,7 +24,7 @@
                             <option value="{{ $item->user_id }}">{{ $item->nama }}</option>
                         @endforeach
                     </select>
-                    <small class="form-text text-muted">Penjual</small>
+                    <small class="form-text text-muted">Nama Penjual</small>
                 </div>
                 <div class="col-3">
                     <select class="form-control" id="barang_id" name="barang_id">
@@ -31,7 +33,7 @@
                             <option value="{{ $item->barang_id }}">{{ $item->barang_nama }}</option>
                         @endforeach
                     </select>
-                    <small class="form-text text-muted">Barang</small>
+                    <small class="form-text text-muted">Nama Barang</small>
                 </div>
             </div>
 
@@ -62,8 +64,9 @@
                 $('#myModal').modal('show');
             });
         }
+        var dataPenjualan
         $(document).ready(function() {
-            var table = $('#table_penjualan').DataTable({
+            dataPenjualan = $('#table_penjualan').DataTable({
                 serverSide: true,
                 ajax: {
                     url: "{{ url('penjualan/list') }}",
@@ -80,22 +83,34 @@
                         searchable: false
                     },
                     {
-                        data: "penjualan_kode"
+                        data: "penjualan_kode",
+                        orderable: true,
+                        searchable: true
                     },
                     {
-                        data: "pembeli"
+                        data: "pembeli",
+                        orderable: true,
+                        searchable: true
                     },
                     {
-                        data: "penjualan_tanggal"
+                        data: "penjualan_tanggal",
+                        orderable: true,
+                        searchable: true
                     },
                     {
-                        data: "user_nama"
+                        data: "user_nama",
+                        orderable: true,
+                        searchable: true
                     },
                     {
-                        data: "barang_nama"
+                        data: "barang_nama",
+                        orderable: true,
+                        searchable: true
                     },
                     {
                         data: "total_harga",
+                        // orderable: true,
+                        searchable: true,
                         className: "text-end"
                     },
                     {
