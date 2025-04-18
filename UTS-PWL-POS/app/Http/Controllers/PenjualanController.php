@@ -190,7 +190,7 @@ class PenjualanController extends Controller
                 $penjualan->delete();
                 return response()->json([
                     'status'  => true,
-                    'message' => 'Data penjualan beserta detailnya berhasil dihapus'
+                    'message' => 'Data penjualan berhasil dihapus'
                 ]);
             } else {
                 return response()->json([
