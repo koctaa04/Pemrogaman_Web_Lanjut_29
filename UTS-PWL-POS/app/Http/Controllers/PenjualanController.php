@@ -84,8 +84,11 @@ class PenjualanController extends Controller
             })
             ->addColumn('aksi', function ($penjualan) {
                 $btn = '<button onclick="modalAction(\'' . url('/penjualan/' . $penjualan->penjualan_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/penjualan/' . $penjualan->penjualan_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/penjualan/' . $penjualan->penjualan_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                // hanya tampilkan tombol Edit & Hapus jika user adalah manager
+                if (auth()->user()->level->level_kode === 'MNG') {
+                    $btn .= '<button onclick="modalAction(\'' . url('/penjualan/' . $penjualan->penjualan_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                    $btn .= '<button onclick="modalAction(\'' . url('/penjualan/' . $penjualan->penjualan_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
+                }
                 return $btn;
             })
             ->rawColumns(['aksi'])
@@ -105,82 +108,79 @@ class PenjualanController extends Controller
         $barangs = BarangModel::all();
         return view('penjualan.create_ajax', compact('barangs'));
     }
-public function store_ajax(Request $request)
-{
-    $rules = [
-        'pembeli' => ['required', 'string', 'max:100'],
-        'details' => ['required', 'array', 'min:1'],
-        'details.*.barang_id' => ['required', 'integer', 'exists:m_barang,barang_id'],
-        'details.*.jumlah' => ['required', 'integer', 'min:1'],
-        'details.*.harga' => ['required', 'numeric'],
-    ];
+    public function store_ajax(Request $request)
+    {
+        $rules = [
+            'pembeli' => ['required', 'string', 'max:100'],
+            'details' => ['required', 'array', 'min:1'],
+            'details.*.barang_id' => ['required', 'integer', 'exists:m_barang,barang_id'],
+            'details.*.jumlah' => ['required', 'integer', 'min:1'],
+            'details.*.harga' => ['required', 'numeric'],
+        ];
 
-    $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Validasi Gagal',
-            'msgField' => $validator->errors()
-        ]);
-    }
-
-    DB::beginTransaction();
-    try {
-        $kode = 'TRX-' . strtoupper(substr(preg_replace('/\s+/', '', $request->pembeli), 0, 3)) . '-' . now()->format('YmdHis');
-        $tanggal = now();
-        $user_id = auth()->id() ?? 1;
-
-        // Buat transaksi penjualan
-        $penjualan = PenjualanModel::create([
-            'user_id' => $user_id,
-            'pembeli' => $request->pembeli,
-            'penjualan_kode' => $kode,
-            'penjualan_tanggal' => $tanggal,
-        ]);
-
-        // Loop melalui detail transaksi penjualan
-        foreach ($request->details as $index => $detail) {
-            // Ambil stok barang yang dibeli
-            $barang = BarangModel::where('barang_id', $detail['barang_id'])->first();
-            // Cek apakah stok cukup
-            if (!$barang || $barang->stok < $detail['jumlah']) {
-                DB::rollBack();
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Stok tidak mencukupi untuk barang pada baris ke-' . ($index + 1)
-                ]);
-            }
-
-
-            // Update stok di tabel m_barang
-            // $barang = BarangModel::findOrFail($detail['barang_id']);
-            $barang->stok -= $detail['jumlah'];
-            $barang->save();
-
-            // Simpan detail transaksi
-            PenjualanDetailModel::create([
-                'penjualan_id' => $penjualan->penjualan_id,
-                'barang_id' => $detail['barang_id'],
-                'jumlah' => $detail['jumlah'],
-                'harga' => $detail['harga'],
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi Gagal',
+                'msgField' => $validator->errors()
             ]);
         }
 
-        DB::commit();
+        DB::beginTransaction();
+        try {
+            $kode = 'TRX-' . strtoupper(substr(preg_replace('/\s+/', '', $request->pembeli), 0, 3)) . '-' . now()->format('YmdHis');
+            $tanggal = now();
+            $user_id = auth()->id() ?? 1;
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Penjualan berhasil disimpan'
-        ]);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            'status' => false,
-            'message' => 'Gagal menyimpan: ' . $e->getMessage()
-        ]);
+            // Buat transaksi penjualan
+            $penjualan = PenjualanModel::create([
+                'user_id' => $user_id,
+                'pembeli' => $request->pembeli,
+                'penjualan_kode' => $kode,
+                'penjualan_tanggal' => $tanggal,
+            ]);
+
+            // Loop melalui detail transaksi penjualan
+            foreach ($request->details as $index => $detail) {
+                // Ambil data barang yang dibeli
+                $barang = BarangModel::where('barang_id', $detail['barang_id'])->first();
+                // Cek apakah stok cukup
+                if (!$barang || $barang->stok < $detail['jumlah']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Stok tidak mencukupi untuk barang pada baris ke-' . ($index + 1)
+                    ]);
+                }
+
+                $barang->stok -= $detail['jumlah'];
+                $barang->save();
+
+                // Simpan detail transaksi
+                PenjualanDetailModel::create([
+                    'penjualan_id' => $penjualan->penjualan_id,
+                    'barang_id' => $detail['barang_id'],
+                    'jumlah' => $detail['jumlah'],
+                    'harga' => $detail['harga'],
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Penjualan berhasil disimpan'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal menyimpan: ' . $e->getMessage()
+            ]);
+        }
     }
-}
 
 
     public function confirm_ajax($id)
