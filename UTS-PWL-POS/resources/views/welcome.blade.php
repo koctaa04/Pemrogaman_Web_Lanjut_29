@@ -1,4 +1,4 @@
-w@extends('layouts.template')
+@extends('layouts.template')
 
 @section('content')
     <div class="card">
@@ -12,3 +12,8 @@ w@extends('layouts.template')
         </div>
     </div>
 @endsection
+<script>
+    setTimeout(function() {
+        window.location.reload();
+    }, 2000); 
+</script>
