@@ -54,46 +54,6 @@ class PenjualanSeeder extends Seeder
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ],
-            [
-                'user_id'           => 1, // Merujuk ke user dengan id 1
-                'pembeli'           => 'Rina Suryani',
-                'penjualan_kode'    => 'PNJ06',
-                'penjualan_tanggal' => now(),
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-            [
-                'user_id'           => 2, // Merujuk ke user dengan id 2
-                'pembeli'           => 'Joko Susilo',
-                'penjualan_kode'    => 'PNJ07',
-                'penjualan_tanggal' => now(),
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-            [
-                'user_id'           => 2, // Merujuk ke user dengan id 2
-                'pembeli'           => 'Lilis Kurniawati',
-                'penjualan_kode'    => 'PNJ08',
-                'penjualan_tanggal' => now(),
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-            [
-                'user_id'           => 2, // Merujuk ke user dengan id 2
-                'pembeli'           => 'Hendra Wijaya',
-                'penjualan_kode'    => 'PNJ09',
-                'penjualan_tanggal' => now(),
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
-            [
-                'user_id'           => 2, // Merujuk ke user dengan id 2
-                'pembeli'           => 'Tuti Pertiwi',
-                'penjualan_kode'    => 'PNJ10',
-                'penjualan_tanggal' => now(),
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ],
         ]);
     }
 }

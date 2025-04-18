@@ -45,7 +45,7 @@
                         <th>Kode Transaksi</th>
                         <th>Pembeli</th>
                         <th>Tanggal</th>
-                        <th>Nama Kasir</th>
+                        <th>Nama Kasirpse</th>
                         <th>Nama Barang</th>
                         <th>Total Harga</th>
                         <th>Aksi</th>

@@ -38,6 +38,23 @@ class PenjualanDetailSeeder extends Seeder
                 'created_at'     => now(),
                 'updated_at'     => now(),
             ],
+            [
+                'penjualan_id'   => 4, 
+                'barang_id'      => 1, 
+                'jumlah'         => 2, 
+                'harga'          => 19000000, 
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ],
+            [
+                'penjualan_id'   => 5,
+                'barang_id'      => 2,
+                'jumlah'         => 1,
+                'harga'          => 22000000,
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ],
+
         ]);
     }
 }
