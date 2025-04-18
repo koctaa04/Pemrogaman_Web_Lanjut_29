@@ -11,8 +11,10 @@ use App\Models\PenjualanModel;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Models\PenjualanDetailModel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PenjualanController extends Controller
 {
@@ -253,5 +255,224 @@ class PenjualanController extends Controller
                 'message' => 'Data penjualan berhasil diperbarui'
             ]);
         }
+    }
+
+    public function import()
+    {
+        return view('penjualan.import');
+    }
+
+    public function import_ajax(Request $request)
+    {
+        if (! $request->ajax() && ! $request->wantsJson()) {
+            return redirect()->back();
+        }
+
+        // 1) validasi file
+        $validator = Validator::make($request->all(), [
+            'file_penjualan' => ['required', 'mimes:xlsx', 'max:2048'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'   => false,
+                'message'  => 'Validasi gagal',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        // 2) load spreadsheet
+        $path        = $request->file('file_penjualan')->getPathname();
+        $reader      = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($path);
+
+        // Sheet pertama = header penjualan, sheet kedua = detail
+        $sheetH = $spreadsheet->getSheet(0)->toArray(null, true, true, true);
+        $sheetD = $spreadsheet->getSheet(1)->toArray(null, true, true, true);
+
+        DB::beginTransaction();
+        try {
+            // Mengimport penjualan
+            $mapKode = []; // [ penjualan_kode => penjualan_id ]
+            foreach ($sheetH as $rowNum => $row) {
+                if ($rowNum === 1) {
+                    // anggap baris 1 adalah header kolom: skip
+                    continue;
+                }
+
+                // baca kolom A:D sesuai template:
+                $userId  = intval($row['A'] ?? 0);
+                $pembeli = trim($row['B']  ?? '');
+                $kode    = trim($row['C']  ?? '');
+                $tgl     = trim($row['D']  ?? '');
+
+                // jika salah satu field wajib kosong, skip baris ini
+                if (! $userId || $kode === '' || ! $tgl) {
+                    continue;
+                }
+
+                // insert penjualan baru
+                $p = PenjualanModel::create([
+                    'user_id'           => $userId,
+                    'pembeli'           => $pembeli,
+                    'penjualan_kode'    => $kode,
+                    'penjualan_tanggal' => date('Y-m-d H:i:s', strtotime($tgl)),
+                ]);
+
+                // simpan mapping untuk detail
+                $mapKode[$kode] = $p->penjualan_id;
+            }
+
+            // Mengimport detail penjualan serta update stok di barang
+            foreach ($sheetD as $rowNum => $row) {
+                if ($rowNum === 1) {
+                    // skip header kolom
+                    continue;
+                }
+
+                $kode      = trim($row['A'] ?? '');
+                $barangId  = intval($row['B'] ?? 0);
+                $jumlah    = intval($row['C'] ?? 0);
+                $harga     = floatval($row['D'] ?? 0);
+
+                // pastikan header dengan kode ini sudah di‐import
+                if (! isset($mapKode[$kode])) {
+                    throw new \Exception("Header penjualan kode “{$kode}” tidak ditemukan (baris {$rowNum}).");
+                }
+                $penjualanId = $mapKode[$kode];
+
+                // cek & kurangi stok di BarangModel
+                $barang = BarangModel::find($barangId);
+                if (! $barang) {
+                    throw new \Exception("Barang dengan ID {$barangId} tidak ditemukan (baris {$rowNum}).");
+                }
+                if ($barang->stok < $jumlah) {
+                    throw new \Exception("Stok tidak mencukupi untuk barang “{$barang->barang_nama}” (baris {$rowNum}).");
+                }
+                // kurangi stok
+                $barang->decrement('stok', $jumlah);
+
+                // simpan detail
+                PenjualanDetailModel::create([
+                    'penjualan_id' => $penjualanId,
+                    'barang_id'    => $barangId,
+                    'jumlah'       => $jumlah,
+                    'harga'        => $harga,
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'Import berhasil: data penjualan & detail tersimpan.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status'  => false,
+                'message' => 'Import gagal: ' . $e->getMessage()
+            ]);
+        }
+    }
+    public function export_excel()
+    {
+        // Ambil semua penjualan beserta relasi user dan detail->barang
+        $penjualans = PenjualanModel::with(['user', 'detailPenjualan.barang'])
+            ->orderBy('penjualan_tanggal')
+            ->get();
+
+        // Buat objek spreadsheet dan sheet pertama
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle(' Penjualan');
+
+        // Header untuk sheet Master
+        $sheet1->setCellValue('A1', 'No');
+        $sheet1->setCellValue('B1', 'Nama Kasir');
+        $sheet1->setCellValue('C1', 'Pembeli');
+        $sheet1->setCellValue('D1', 'Kode Transaksi');
+        $sheet1->setCellValue('E1', 'Tanggal Penjualan');
+        $sheet1->getStyle('A1:E1')->getFont()->setBold(true);
+
+        // Isi data master
+        $row = 2;
+        $no = 1;
+        foreach ($penjualans as $penjualan) {
+            $sheet1->setCellValue("A{$row}", $no);
+            $sheet1->setCellValue("B{$row}", $penjualan->user->nama);
+            $sheet1->setCellValue("C{$row}", $penjualan->pembeli);
+            $sheet1->setCellValue("D{$row}", $penjualan->penjualan_kode);
+            $sheet1->setCellValue("E{$row}", date('Y-m-d H:i:s', strtotime($penjualan->penjualan_tanggal)));
+            $no++;
+            $row++;
+        }
+
+        // Auto‑size kolom sheet1
+        foreach (range('A','E') as $col) {
+            $sheet1->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Buat sheet kedua untuk detail
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Detail Penjualan');
+
+        // Header untuk sheet Detail
+        $sheet2->setCellValue('A1', 'No');
+        $sheet2->setCellValue('B1', 'Kode Transaksi');
+        $sheet2->setCellValue('C1', 'Nama Barang');
+        $sheet2->setCellValue('D1', 'Jumlah');
+        $sheet2->setCellValue('E1', 'Total Harga');
+        $sheet2->getStyle('A1:E1')->getFont()->setBold(true);
+
+        // Isi data detail
+        $row = 2;
+        $no = 1;
+        foreach ($penjualans as $penjualan) {
+            foreach ($penjualan->detailPenjualan as $detail) {
+                $sheet2->setCellValue("A{$row}", $no);
+                $sheet2->setCellValue("B{$row}", $penjualan->penjualan_kode);
+                $sheet2->setCellValue("C{$row}", $detail->barang->barang_nama);
+                $sheet2->setCellValue("D{$row}", $detail->jumlah);
+                $sheet2->setCellValue("E{$row}", $detail->harga);
+                $no++;
+                $row++;
+            }
+        }
+
+        // Auto‑size kolom sheet2
+        foreach (range('A','E') as $col) {
+            $sheet2->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Kirim header untuk download
+        $writer   = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data_Penjualan_Detail_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="'. $filename .'"');
+        header('Cache-Control: max-age=0');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: '. gmdate('D, d M Y H:i:s') .' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $writer->save('php://output');
+        exit;
+    }
+    public function export_pdf()
+    {
+        $penjualan = PenjualanModel::with(['user', 'detailPenjualan'])
+            ->orderBy('penjualan_id')
+            ->orderBy('penjualan_kode')
+            ->get();
+
+
+        $pdf = PDF::loadView('penjualan.export_pdf', ['penjualan' => $penjualan]);
+        $pdf->setPaper('A4', 'portrait'); // set ukuran kertas dan orientasi
+        $pdf->setOption("isRemoteEnabled", true); // set true jika ada gambar dari url
+        $pdf->render(); // render pdf
+
+        return $pdf->stream('Data Supplier ' . date('Y-m-d H-i-s') . '.pdf');
     }
 }

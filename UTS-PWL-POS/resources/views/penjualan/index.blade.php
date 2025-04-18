@@ -2,8 +2,15 @@
     <div class="card card-outline card-primary">
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
-            <div class="card-tools"> <button onclick="modalAction('{{ url('/penjualan/create_ajax') }}')"
-                    class="btn btn-sm btn-success mt-1 mr-4">Tambah Data</button> </div>
+            <div class="card-tools">
+                <button onclick="modalAction('{{ url('/penjualan/import') }}')" class="btn btn-sm mt-1 btn-info">Import penjualan</button>
+                <a href="{{ url('/penjualan/export_excel') }}" class="btn btn-sm mt-1 btn-primary"><i class="fa fa-fileexcel"></i> Export
+                    penjualan (Excel)</a>
+                <a href="{{ url('/penjualan/export_pdf') }}" class="btn btn-sm mt-1 btn-warning"><i class="fa fa-filepdf"></i> Export penjualan 
+                    (PDF)</a>
+                <button onclick="modalAction('{{ url('/penjualan/create_ajax') }}')"
+                    class="btn btn-sm btn-success mt-1 mr-4">Tambah Data</button>
+            </div>
         </div>
         <div class="card-body"> {{-- Alerts --}}
             @if (session('success'))
@@ -45,7 +52,7 @@
                         <th>Kode Transaksi</th>
                         <th>Pembeli</th>
                         <th>Tanggal</th>
-                        <th>Nama Kasirpse</th>
+                        <th>Nama Kasir</th>
                         <th>Nama Barang</th>
                         <th>Total Harga</th>
                         <th>Aksi</th>

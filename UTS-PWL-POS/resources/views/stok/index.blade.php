@@ -4,6 +4,11 @@
             <div class="card-header">
                 <h3 class="card-title">{{ $page->title }}</h3>
                 <div class="card-tools">
+                    <button onclick="modalAction('{{ url('/stok/import') }}')" class="btn btn-sm mt-1 btn-info">Import stok</button>
+                    <a href="{{ url('/stok/export_excel') }}" class="btn btn-sm mt-1 btn-primary"><i class="fa fa-fileexcel"></i> Export
+                        stok (Excel)</a>
+                    <a href="{{ url('/stok/export_pdf') }}" class="btn btn-sm mt-1 btn-warning"><i class="fa fa-filepdf"></i> Export stok 
+                        (PDF)</a>
                     <button onclick="modalAction('{{ url('/stok/create_ajax') }}')"
                         class="btn btn-sm btn-success mt-1 mr-4">Tambah Data</button>
                 </div>
