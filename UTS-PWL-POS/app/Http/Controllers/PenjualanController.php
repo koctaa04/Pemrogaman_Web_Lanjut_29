@@ -127,7 +127,7 @@ public function store_ajax(Request $request)
 
     DB::beginTransaction();
     try {
-        $kode = 'TRX-' . strtoupper(Str::slug($request->pembeli)) . '-' . now()->format('YmdHis');
+        $kode = 'TRX-' . strtoupper(substr(preg_replace('/\s+/', '', $request->pembeli), 0, 3)) . '-' . now()->format('YmdHis');
         $tanggal = now();
         $user_id = auth()->id() ?? 1;
 
@@ -142,10 +142,9 @@ public function store_ajax(Request $request)
         // Loop melalui detail transaksi penjualan
         foreach ($request->details as $index => $detail) {
             // Ambil stok barang yang dibeli
-            $stokBarang = StokModel::where('barang_id', $detail['barang_id'])->first();
-
+            $barang = BarangModel::where('barang_id', $detail['barang_id'])->first();
             // Cek apakah stok cukup
-            if (!$stokBarang || $stokBarang->stok_jumlah < $detail['jumlah']) {
+            if (!$barang || $barang->stok < $detail['jumlah']) {
                 DB::rollBack();
                 return response()->json([
                     'status' => false,
@@ -153,12 +152,9 @@ public function store_ajax(Request $request)
                 ]);
             }
 
-            // Kurangi stok pada tabel StokModel
-            $stokBarang->stok_jumlah -= $detail['jumlah'];
-            $stokBarang->save();
 
             // Update stok di tabel m_barang
-            $barang = BarangModel::findOrFail($detail['barang_id']);
+            // $barang = BarangModel::findOrFail($detail['barang_id']);
             $barang->stok -= $detail['jumlah'];
             $barang->save();
 
