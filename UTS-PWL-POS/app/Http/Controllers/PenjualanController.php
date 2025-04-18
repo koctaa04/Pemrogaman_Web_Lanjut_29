@@ -200,4 +200,51 @@ class PenjualanController extends Controller
             }
         }
     }
+
+    public function edit_ajax($id)
+    {
+        $penjualan = PenjualanModel::find($id);
+
+        if (!$penjualan) {
+            return response()->view('penjualan.edit_ajax', ['penjualan' => null]);
+        }
+
+        return response()->view('penjualan.edit_ajax', ['penjualan' => $penjualan]);
+    }
+
+    public function update_ajax(Request $request, $id)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $validator = Validator::make($request->all(), [
+                'pembeli' => 'required|string|max:255',
+                'penjualan_tanggal' => 'required|date',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validasi gagal',
+                    'msgField' => $validator->errors()
+                ]);
+            }
+
+            $penjualan = PenjualanModel::find($id);
+
+            if (!$penjualan) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data penjualan tidak ditemukan'
+                ]);
+            }
+
+            $penjualan->pembeli = $request->pembeli;
+            $penjualan->penjualan_tanggal = $request->penjualan_tanggal;
+            $penjualan->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data penjualan berhasil diperbarui'
+            ]);
+        }
+    }
 }
