@@ -75,10 +75,18 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
+            $errors = $validator->errors();
+
+            // Ambil pesan pertama dari setiap field
+            $messages = [];
+            foreach ($errors->messages() as $field => $msgArr) {
+                $messages[] = $msgArr[0]; // hanya ambil pesan pertama per field
+            }
+
             return response()->json([
-                'status' => false, // response status, false: error/gagal, true: berhasil
-                'message' => 'Validasi Gagal',
-                'msgField' => $validator->errors() // pesan error validasi
+                'status' => false,
+                'message' => implode(', ', $messages), // gabungkan semua jadi satu kalimat
+                'msgField' => $errors
             ]);
         }
 
@@ -97,6 +105,4 @@ class AuthController extends Controller
             'redirect' => url('/')
         ]);
     }
-    
-    
 }

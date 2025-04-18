@@ -147,23 +147,44 @@
             <div class="card-face card-back">
                 <h3 class="text-center mb-3">Join Us Today! 🎉</h3>
                 <p class="text-center text-muted">Create your account in seconds</p>
-                <form action="{{ url('register') }}" method="POST" id="form-login">
+                <form action="{{ url('register') }}" method="POST" id="form-register">
                     @csrf
                     <div class="mb-3">
-                        <label for="signupUsername" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="signupUsername">
+                        <label for="level_id" class="form-label">Level</label>
+                        <select id="level_id" name="level_id" class="form-control">
+                            <option value="">Pilih Level</option>
+                            @foreach ($levels as $level)
+                                <option value="{{ $level->level_id }}">{{ $level->level_nama }}</option>
+                            @endforeach
+                        </select>
+                        <small id="error-level_id" class="error-text text-danger"></small>
                     </div>
                     <div class="mb-3">
-                        <label for="signupEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="signupEmail">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Username"
+                            required>
+                        <small id="error-username" class="error-text text-danger"></small>
                     </div>
+
                     <div class="mb-3">
-                        <label for="signupPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="signupPassword">
+                        <label for="nama" class="form-label">Nama Lengkap</label>
+                        <input type="text" id="nama" name="nama" class="form-control"
+                            placeholder="Nama Lengkap" required>
+                        <small id="error-nama" class="error-text text-danger"></small>
                     </div>
+
                     <div class="mb-3">
-                        <label for="signupConfirm" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="signupConfirm">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-control"
+                            placeholder="Password" required>
+                        <small id="error-password" class="error-text text-danger"></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
+                        <input type="password" id="password_confirmation" name="password_confirmation"
+                            class="form-control" placeholder="Konfirmasi Password" required>
+                        <small id="error-password_confirmation" class="error-text text-danger"></small>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-success">Register</button>
@@ -231,7 +252,7 @@
                                 });
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Terjadi Kesalahan',
+                                    title: 'Login gagal!',
                                     text: response.message
                                 });
                             }
@@ -250,6 +271,42 @@
                 unhighlight: function(element, errorClass, validClass) {
                     $(element).removeClass('is-invalid');
                 }
+            });
+            $('#form-register').on('submit', function(e) {
+                e.preventDefault(); // cegah submit biasa
+
+                var form = this;
+
+                $.ajax({
+                    url: $(form).attr('action'),
+                    method: $(form).attr('method'),
+                    data: $(form).serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sukses!',
+                                text: response.message
+                            }).then(() => {
+                                window.location.href = response.redirect;
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Registrasi Gagal!',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi Kesalahan!',
+                            text: 'Coba lagi nanti.'
+                        });
+                    }
+                });
             });
         });
     </script>
