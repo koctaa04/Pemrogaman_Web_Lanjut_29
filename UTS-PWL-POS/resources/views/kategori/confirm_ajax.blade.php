@@ -40,6 +40,10 @@
                             <th class="text-right col-3">Nama kategori:</th>
                             <td class="col-9">{{ $kategori->kategori_nama }}</td>
                         </tr>
+                        <tr>
+                            <th class="text-right col-3">Deskripsi:</th>
+                            <td class="col-9">{{ $kategori->deskripsi }}</td>
+                        </tr>
                     </table>
                 </div>
                 <div class="modal-footer">

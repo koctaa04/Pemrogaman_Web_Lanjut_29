@@ -30,6 +30,7 @@
                         <th>No</th>
                         <th>Kode Kategori</th>
                         <th>Nama Kategori</th>
+                        <th>Deskripsi</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -74,6 +75,12 @@
                     },
                     {
                         data: "kategori_nama",
+                        className: "",
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        data: "deskripsi",
                         className: "",
                         orderable: true,
                         searchable: true

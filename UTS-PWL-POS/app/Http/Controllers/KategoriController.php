@@ -32,7 +32,7 @@ class KategoriController extends Controller
 
     public function list(Request $request)
     {
-        $kategoris = KategoriModel::select('kategori_id', 'kategori_kode', 'kategori_nama');
+        $kategoris = KategoriModel::select('kategori_id', 'kategori_kode','kategori_nama','deskripsi', );
 
 
         return DataTables::of($kategoris)
@@ -73,7 +73,8 @@ class KategoriController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'kategori_kode' => 'required|string|max:10|unique:m_kategori,kategori_kode',
-                'kategori_nama' => 'required|string|max:100'
+                'kategori_nama' => 'required|string|max:100',
+                'deskripsi'     => 'required|string|max:255'
             ];
 
 
@@ -110,7 +111,8 @@ class KategoriController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'kategori_kode' => 'required|string|max:10|unique:m_kategori,kategori_kode,' . $id . ',kategori_id',
-                'kategori_nama' => 'required|string|max:100'
+                'kategori_nama' => 'required|string|max:100',
+                'deskripsi'     => 'required|string|max:255'
             ];
 
             $validator = Validator::make($request->all(), $rules);

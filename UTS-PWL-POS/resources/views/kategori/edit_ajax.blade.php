@@ -19,6 +19,11 @@
                     <input value="{{ $kategori->kategori_nama }}" type="text" name="kategori_nama" id="kategori_nama" class="form-control" required>
                     <small id="error-kategori_nama" class="error-text form-text text-danger"></small>
                 </div>
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <input value="{{ $kategori->deskripsi }}" type="text" name="deskripsi" id="deskripsi" class="form-control" required>
+                    <small id="error-deskripsi" class="error-text form-text text-danger"></small>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
