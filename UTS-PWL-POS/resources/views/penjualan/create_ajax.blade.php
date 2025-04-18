@@ -1,100 +1,146 @@
-<form action="{{ url('stok/ajax') }}" method="POST" id="form-tambah">
-    @csrf
-    <div id="modal-master" class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+<div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+        <form action="{{ url('penjualan/ajax') }}" method="POST" id="form-tambah">
+            @csrf
+
             <div class="modal-header">
-                <h5 class="modal-title">Tambah Data Stok</h5> <button type="button" class="close" data-dismiss="modal"
-                    aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title">Tambah Data Penjualan</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+
             <div class="modal-body">
-                <div class="form-group"> <label>Barang</label> <select name="barang_id" class="form-control" required>
-                        <option value="">- Pilih Barang -</option>
-                        @foreach ($barang as $b)
-                            <option value="{{ $b->barang_id }}">{{ $b->barang_nama }}</option>
-                        @endforeach
-                    </select> <small id="error-barang_id" class="error-text form-text text-danger"></small> </div>
-                <div class="form-group"> <label>Supplier</label> <select name="supplier_id" class="form-control"
-                        required>
-                        <option value="">- Pilih Supplier -</option>
-                        @foreach ($supplier as $s)
-                            <option value="{{ $s->supplier_id }}">{{ $s->supplier_nama }}</option>
-                        @endforeach
-                    </select> <small id="error-supplier_id" class="error-text form-text text-danger"></small> </div>
-                <div class="form-group"> <label>Jumlah</label> <input type="number" name="stok_jumlah"
-                        placeholder="Jumlah Stok" class="form-control" required> <small id="error-stok_jumlah"
-                        class="error-text form-text text-danger"></small> </div>
-                <div class="form-group"> <label>Tanggal</label> <input type="date" name="stok_tanggal"
-                        class="form-control" required> <small id="error-stok_tanggal"
-                        class="error-text form-text text-danger"></small> </div>
+                <div class="form-group">
+                    <label>Pembeli</label>
+                    <input type="text" name="pembeli" id="pembeli" class="form-control" required>
+                    <small id="error-pembeli" class="error-text form-text text-danger"></small>
+                </div>
+
+                <h5>Penjualan Barang</h5>
+                <table class="table" id="detailTable">
+                    <thead>
+                        <tr>
+                            <th>Barang</th>
+                            <th>Stok Tersedia</th>
+                            <th>Jumlah</th>
+                            <th>Harga (Otomatis)</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{-- Baris detail pertama --}}
+                    </tbody>
+                </table>
+                <button type="button" id="addDetail" class="btn btn-info mb-3">Tambah Barang</button>
             </div>
-            <div class="modal-footer"> <button type="button" data-dismiss="modal"
-                    class="btn btn-warning">Batal</button> <button type="submit"
-                    class="btn btn-primary">Simpan</button> </div>
-        </div>
+
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Penjualan</button>
+            </div>
+        </form>
     </div>
-</form>
+</div>
+
 <script>
-    $(document).ready(function() {
-        $("#form-tambah").validate({
-            rules: {
-                barang_id: {
-                    required: true,
-                    number: true
-                },
-                supplier_id: {
-                    required: true,
-                    number: true
-                },
-                stok_jumlah: {
-                    required: true,
-                    number: true,
-                    min: 1
-                },
-                stok_tanggal: {
-                    required: true,
-                    date: true
-                }
-            },
-            submitHandler: function(form) {
-                $.ajax({
-                    url: form.action,
-                    type: form.method,
-                    data: $(form).serialize(),
-                    success: function(response) {
-                        if (response.status) {
-                            $('#myModal').modal('hide');
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: response.message
-                            });
-                            dataStok.ajax.reload();
-                        } else {
-                            $('.error-text').text('');
-                            $.each(response.msgField, function(prefix, val) {
-                                $('#error-' + prefix).text(val[0]);
-                            });
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Terjadi Kesalahan',
-                                text: response.message
-                            });
+    $(document).ready(function () {
+        var barangs = @json($barangs);
+        var detailIndex = 0;
+
+        function addDetailRow() {
+            let row = `<tr data-index="${detailIndex}">
+                <td>
+                    <select name="details[${detailIndex}][barang_id]" class="form-control barang-select" required>
+                        <option value="">- Pilih Barang -</option>`;
+            $.each(barangs, function (i, barang) {
+                row += `<option value="${barang.barang_id}" data-harga="${barang.harga_jual}" data-stok="${barang.stok_sum_stok_jumlah ?? 0}">
+                            ${barang.barang_nama} (Rp. ${Number(barang.harga_jual).toLocaleString()})
+                        </option>`;
+            });
+            row += `</select>
+                    <small class="error-text form-text text-danger" id="error-details_${detailIndex}_barang_id"></small>
+                </td>
+                <td>
+                    <span class="stok-text">0</span>
+                </td>
+                <td>
+                    <input type="number" name="details[${detailIndex}][jumlah]" class="form-control jumlah-input" required min="1">
+                    <small class="error-text form-text text-danger" id="error-details_${detailIndex}_jumlah"></small>
+                </td>
+                <td>
+                    <input type="text" name="details[${detailIndex}][harga]" class="form-control harga-input" readonly required>
+                    <small class="error-text form-text text-danger" id="error-details_${detailIndex}_harga"></small>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger removeDetail">Hapus</button>
+                </td>
+            </tr>`;
+            $('#detailTable tbody').append(row);
+            detailIndex++;
+        }
+
+        // Tambahkan satu baris saat load
+        addDetailRow();
+
+        $('#addDetail').on('click', function () {
+            addDetailRow();
+        });
+
+        $('#detailTable').on('change', '.barang-select', function () {
+            var selectedOption = $(this).find(':selected');
+            var stok = selectedOption.data('stok') || 0;
+            var harga = parseFloat(selectedOption.data('harga')) || 0;
+            var row = $(this).closest('tr');
+            row.find('.stok-text').text(stok);
+            var jumlah = parseFloat(row.find('.jumlah-input').val()) || 0;
+            row.find('.harga-input').val(harga * jumlah);
+        });
+
+        $('#detailTable').on('input', '.jumlah-input', function () {
+            var jumlah = parseFloat($(this).val()) || 0;
+            var row = $(this).closest('tr');
+            var selectedOption = row.find('.barang-select').find(':selected');
+            var harga = parseFloat(selectedOption.data('harga')) || 0;
+            row.find('.harga-input').val(harga * jumlah);
+        });
+
+        $('#detailTable').on('click', '.removeDetail', function () {
+            $(this).closest('tr').remove();
+        });
+
+        $("#form-tambah").submit(function (e) {
+            e.preventDefault();
+            let form = this;
+
+            $.ajax({
+                url: form.action,
+                type: form.method,
+                data: $(form).serialize(),
+                success: function (response) {
+                    if (response.status) {
+                        $('#myModal').modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.message
+                        });
+                        if (typeof dataPenjualan !== 'undefined') {
+                            dataPenjualan.ajax.reload();
                         }
+                    } else {
+                        $(".error-text").text("");
+                        $.each(response.msgField || {}, function (prefix, val) {
+                            $("#error-" + prefix.replace(/\./g, '_')).text(val[0]);
+                        });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi Kesalahan',
+                            text: response.message
+                        });
                     }
-                });
-                return false;
-            },
-            errorElement: 'span',
-            errorPlacement: function(error, element) {  
-                error.addClass('invalid-feedback');
-                element.closest('.form-group').append(error);
-            },
-            highlight: function(element, errorClass, validClass) {
-                $(element).addClass('is-invalid');
-            },
-            unhighlight: function(element, errorClass, validClass) {
-                $(element).removeClass('is-invalid');
-            }
+                }
+            });
         });
     });
 </script>

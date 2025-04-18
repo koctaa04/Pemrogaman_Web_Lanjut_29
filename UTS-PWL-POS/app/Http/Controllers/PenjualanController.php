@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StokModel;
 use App\Models\UserModel;
 use App\Models\BarangModel;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\PenjualanModel;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use App\Models\PenjualanDetailModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,74 +30,6 @@ class PenjualanController extends Controller
         $user = UserModel::all(); // ambil data user untuk filter user
         return view('penjualan.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'barang' => $barang, 'user' => $user, 'activeMenu' => $activeMenu]);
     }
-    //     public function list(Request $request)
-    // {
-    //     $query = Penjualan::with(['user', 'penjualan_detail.barang']);
-
-    //     // Filter berdasarkan user dan barang jika dikirim dari client
-    //     if ($request->user_id) {
-    //         $query->where('user_id', $request->user_id);
-    //     }
-
-    //     if ($request->barang_id) {
-    //         $query->whereHas('penjualan_detail', function ($q) use ($request) {
-    //             $q->where('barang_id', $request->barang_id);
-    //         });
-    //     }
-
-    //     return DataTables::of($query)
-    //         ->addIndexColumn()
-    //         ->addColumn('user_nama', function ($row) {
-    //             return $row->user->user_nama ?? '-';
-    //         })
-    //         ->filterColumn('user_nama', function ($query, $keyword) {
-    //             $query->whereHas('user', function ($q) use ($keyword) {
-    //                 $q->where('user_nama', 'like', "%{$keyword}%");
-    //             });
-    //         })
-    //         ->orderColumn('user_nama', function ($query, $order) {
-    //             $query->leftJoin('m_user', 'penjualan.user_id', '=', 'm_user.user_id')
-    //                   ->orderBy('m_user.user_nama', $order);
-    //         })
-
-    //         ->addColumn('barang_nama', function ($row) {
-    //             // ambil nama barang pertama, jika ada
-    //             return $row->penjualan_detail->first()->barang->barang_nama ?? '-';
-    //         })
-    //         ->filterColumn('barang_nama', function ($query, $keyword) {
-    //             $query->whereHas('penjualan_detail.barang', function ($q) use ($keyword) {
-    //                 $q->where('barang_nama', 'like', "%{$keyword}%");
-    //             });
-    //         })
-    //         ->orderColumn('barang_nama', function ($query, $order) {
-    //             $query->leftJoin('penjualan_detail', 'penjualan.penjualan_id', '=', 'penjualan_detail.penjualan_id')
-    //                   ->leftJoin('m_barang', 'penjualan_detail.barang_id', '=', 'm_barang.barang_id')
-    //                   ->orderBy('m_barang.barang_nama', $order);
-    //         })
-
-    //         ->addColumn('total_harga', function ($row) {
-    //             return $row->penjualan_detail->sum(function ($item) {
-    //                 return $item->harga * $item->jumlah;
-    //             });
-    //         })
-    //         ->filterColumn('total_harga', function ($query, $keyword) {
-    //             $query->whereHas('penjualan_detail', function ($q) use ($keyword) {
-    //                 $q->whereRaw('(harga * jumlah) like ?', ["%$keyword%"]);
-    //             });
-    //         })
-    //         ->orderColumn('total_harga', function ($query, $order) {
-    //             // Sort by total_harga using subquery (or sort in collection if needed)
-    //             // DataTables server-side can't easily sort by computed total unless denormalized
-    //             // Simpler to skip orderColumn if complex, or pre-calculate and store total
-    //         })
-
-    //         ->addColumn('aksi', function ($row) {
-    //             return view('penjualan.aksi', compact('row'))->render();
-    //         })
-
-    //         ->make(true);
-    // }
-
 
     public function list(Request $request)
     {
@@ -163,4 +99,145 @@ class PenjualanController extends Controller
 
         return view('penjualan.show_ajax', ['penjualan' => $penjualan]);
     }
+
+    public function create_ajax()
+{
+    $barangs = BarangModel::withSum('stok', 'stok_jumlah')->get();
+    return view('penjualan.create_ajax', compact('barangs'));
+}
+
+public function store_ajax(Request $request)
+{
+    $rules = [
+        'pembeli' => ['required', 'string', 'max:100'],
+        'details' => ['required', 'array', 'min:1'],
+        'details.*.barang_id' => ['required', 'integer', 'exists:m_barang,barang_id'],
+        'details.*.jumlah' => ['required', 'integer', 'min:1'],
+        'details.*.harga' => ['required', 'numeric'],
+    ];
+
+    $validator = Validator::make($request->all(), $rules);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Validasi Gagal',
+            'msgField' => $validator->errors()
+        ]);
+    }
+
+    DB::beginTransaction();
+    try {
+        $kode = 'TRX-' . strtoupper(Str::slug($request->pembeli)) . '-' . now()->format('YmdHis');
+        $tanggal = now();
+        $user_id = auth()->id() ?? 1;
+
+        $penjualan = PenjualanModel::create([
+            'user_id' => $user_id,
+            'pembeli' => $request->pembeli,
+            'penjualan_kode' => $kode,
+            'penjualan_tanggal' => $tanggal,
+        ]);
+
+        foreach ($request->details as $index => $detail) {
+            $stokBarang = StokModel::where('barang_id', $detail['barang_id'])->first();
+
+            if (!$stokBarang || $stokBarang->stok_jumlah < $detail['jumlah']) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Stok tidak mencukupi untuk barang pada baris ke-' . ($index + 1)
+                ]);
+            }
+
+            $stokBarang->stok_jumlah -= $detail['jumlah'];
+            $stokBarang->save();
+
+            PenjualanDetailModel::create([
+                'penjualan_id' => $penjualan->penjualan_id,
+                'barang_id' => $detail['barang_id'],
+                'jumlah' => $detail['jumlah'],
+                'harga' => $detail['harga'],
+            ]);
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Penjualan berhasil disimpan'
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'status' => false,
+            'message' => 'Gagal menyimpan: ' . $e->getMessage()
+        ]);
+    }
+}
+
+
+    // public function create_ajax()
+    // {
+    //     $barang = BarangModel::all(); // Jika ingin tampilkan barang
+    //     $users = UserModel::all();    // Tambahkan ini untuk dropdown penjual
+    //     return view('penjualan.create_ajax', [
+    //         'barang' => $barang,
+    //         'users' => $users
+    //     ]);
+    // }
+    
+
+
+    // public function store_ajax(Request $request)
+    // {
+    //     \Log::info($request->all());
+
+    //     if ($request->ajax() || $request->wantsJson()) {
+    //         $rules = [
+    //             'pembeli'           => 'required|string|max:50',
+    //             'penjualan_tanggal' => 'required|date',
+    //             'barang_id'         => 'required|exists:m_barang,barang_id',
+    //             'jumlah'            => 'required|integer|min:1',
+    //             'harga'             => 'required|numeric|min:0',
+    //         ];
+    
+    //         $validator = Validator::make($request->all(), $rules);
+    
+    //         if ($validator->fails()) {
+    //             return response()->json([
+    //                 'status'   => false,
+    //                 'message'  => 'Validasi gagal.',
+    //                 'msgField' => $validator->errors(),
+    //             ]);
+    //         }
+    
+    //         // Buat kode otomatis, contoh: PJ-20250417-JohnDoe
+    //         $kode = 'PJ-' . date('Ymd', strtotime($request->penjualan_tanggal)) . '-' . preg_replace('/\s+/', '', $request->pembeli);
+    
+    //         // Simpan data penjualan
+    //         $penjualan = PenjualanModel::create([
+    //             'penjualan_kode'    => $kode,
+    //             'pembeli'           => $request->pembeli,
+    //             'penjualan_tanggal' => $request->penjualan_tanggal,
+    //             'user_id'           => auth()->user()->user_id ?? 1,
+    //         ]);
+    
+    //         // Simpan detail penjualan
+    //         PenjualanDetailModel::create([
+    //             'penjualan_id' => $penjualan->penjualan_id,
+    //             'barang_id'    => $request->barang_id,
+    //             'jumlah'       => $request->jumlah,
+    //             'harga'        => $request->harga,
+    //         ]);
+    
+    //         return response()->json([
+    //             'status'  => true,
+    //             'message' => 'Data penjualan berhasil disimpan.',
+    //         ]);
+    //     }
+    
+    //     return redirect('/');
+    // }
+    
 }
