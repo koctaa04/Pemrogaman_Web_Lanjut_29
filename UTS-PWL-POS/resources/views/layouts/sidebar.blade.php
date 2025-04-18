@@ -88,6 +88,12 @@
 
             <li class="nav-header">Lainnya</li>
             <li class="nav-item">
+                <a href="{{ url('/profile') }}" class="nav-link {{ $activeMenu == 'profile' ? 'active' : '' }} ">
+                    <i class="nav-icon fas fa-user-circle"></i>
+                    <p>Profil</p>
+                </a>
+            </li>
+            <li class="nav-item">
                 <form id="logout-form" action="{{ url('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>

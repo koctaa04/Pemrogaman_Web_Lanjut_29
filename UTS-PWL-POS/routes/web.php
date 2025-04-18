@@ -6,6 +6,7 @@ use App\Http\Controllers\StokController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\SupplierController;
@@ -33,6 +34,10 @@ Route::post('logout', [AuthController::class, 'logout'])->middleware('auth');
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/', [WelcomeController::class, 'index']);
+    
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');   
+    Route::get('/profile/edit', [ProfileController::class, 'editProfile'])->name('profile.edit');
+    Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
 
     Route::middleware(['authorize:ADM'])->group(function () {
         Route::group(['prefix' => 'user'], function () {
