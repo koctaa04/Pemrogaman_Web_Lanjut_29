@@ -42,7 +42,8 @@ class BarangController extends Controller
             'barang_id',
             'kategori_id',
             'barang_kode',
-            'barang_nama'
+            'barang_nama',
+            'stok'
         )
         ->with('kategori'); // relasi ke tabel kategori
 
@@ -103,8 +104,9 @@ class BarangController extends Controller
                     'msgField' => $validator->errors() // pesan error validasi
                 ]);
             }
-
-            BarangModel::create($request->all());
+            $data = $request->all();
+            $data['stok'] = 0;
+            BarangModel::create($data);
 
             return response()->json([
                 'status' => true,

@@ -54,7 +54,7 @@
                     <select name="details[${detailIndex}][barang_id]" class="form-control barang-select" required>
                         <option value="">- Pilih Barang -</option>`;
             $.each(barangs, function (i, barang) {
-                row += `<option value="${barang.barang_id}" data-harga="${barang.harga_jual}" data-stok="${barang.stok_sum_stok_jumlah ?? 0}">
+                row += `<option value="${barang.barang_id}" data-harga="${barang.harga_jual}" data-stok="${barang.stok ?? 0}">
                             ${barang.barang_nama} (Rp. ${Number(barang.harga_jual).toLocaleString()})
                         </option>`;
             });

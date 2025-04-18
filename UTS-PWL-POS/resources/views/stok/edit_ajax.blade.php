@@ -65,7 +65,7 @@
                     </div>
                     <div class="form-group">
                         <label>Tanggal Stok</label>
-                        <input type="date" name="stok_tanggal" id="stok_tanggal" class="form-control">
+                        <input type="datetime-local" name="stok_tanggal" id="stok_tanggal" class="form-control" value="{{ $stok->stok_tanggal }}">
                         <small id="error-stok_tanggal" class="error-text form-text text-danger"></small>
                         <small class="form-text text-muted">Kosongkan jika tidak ingin mengubah</small>
                     </div>

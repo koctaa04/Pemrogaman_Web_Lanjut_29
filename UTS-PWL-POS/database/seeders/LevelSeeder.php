@@ -21,6 +21,12 @@ class LevelSeeder extends Seeder
                 'updated_at'  => now(),
             ],
             [
+                'level_kode'  => 'MNG',
+                'level_nama'  => 'Manager',
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ],
+            [
                 'level_kode'  => 'KSR',
                 'level_nama'  => 'Kasir',
                 'created_at'  => now(),

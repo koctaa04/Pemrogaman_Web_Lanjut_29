@@ -28,6 +28,10 @@
                         <td>{{ $barang->barang_nama }}</td>
                     </tr>
                     <tr>
+                        <th>Stok Barang</th>
+                        <td>{{ $barang->stok }}</td>
+                    </tr>
+                    <tr>
                         <th>Kategori</th>
                         <td>{{ $barang->kategori->kategori_nama ?? '-' }}</td>
                     </tr>

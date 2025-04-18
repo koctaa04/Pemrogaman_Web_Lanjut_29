@@ -16,6 +16,7 @@ class BarangModel extends Model
         'kategori_id',
         'barang_kode',
         'barang_nama',
+        'stok',
         'harga_beli',
         'harga_jual',
     ];
@@ -30,5 +31,4 @@ class BarangModel extends Model
     {
         return $this->hasMany(StokModel::class, 'barang_id', 'barang_id');
     }
-
 }

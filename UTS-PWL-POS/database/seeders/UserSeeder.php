@@ -19,13 +19,19 @@ class UserSeeder extends Seeder
                 'level_id' => 1, // Admin
                 'username' => 'admin',
                 'nama' => 'Yefta Octa',
-                'password' => Hash::make('123456'),
+                'password' => Hash::make('123123'),
             ],
             [
-                'level_id' => 2, // Kasir/Staff
-                'username' => 'staff',
+                'level_id' => 2, // Manager
+                'username' => 'manager',
                 'nama' => 'Shamil',
-                'password' => Hash::make('123456'),
+                'password' => Hash::make('123123'),
+            ],
+            [
+                'level_id' => 3, // Kasir/Staff
+                'username' => 'staff',
+                'nama' => 'Rifda',
+                'password' => Hash::make('123123'),
             ],
         ]);
     }

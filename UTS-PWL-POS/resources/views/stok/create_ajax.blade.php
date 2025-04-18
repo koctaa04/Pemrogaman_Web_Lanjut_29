@@ -45,7 +45,7 @@
                     required: true,
                     number: true
                 },
-                stok_jumlah: {
+                stok: {
                     required: true,
                     number: true,
                     min: 1

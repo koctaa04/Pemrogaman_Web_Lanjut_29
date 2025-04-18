@@ -93,9 +93,15 @@ class StokController extends Controller
             }
 
             $data = $request->all();
-            $data['user_id'] = 1;
-            // $data['user_id'] = auth()->user()->user_id;
+            $data['user_id'] = auth()->user()->user_id;
+            
+            // Simpan data stok
             StokModel::create($data);
+
+            // Update stok di tabel m_barang
+            $barang = BarangModel::find($data['barang_id']);
+            $barang->stok += $data['stok_jumlah'];
+            $barang->save();
 
             return response()->json([
                 'status'  => true,
@@ -131,7 +137,7 @@ class StokController extends Controller
                 'barang_id'    => 'required|integer|exists:m_barang,barang_id',
                 'user_id'      => 'required|integer|exists:m_user,user_id',
                 'supplier_id'  => 'required|integer|exists:m_supplier,supplier_id', // Tambahkan validasi supplier
-                'stok_tanggal' => 'nullable|date', // boleh dikosongkan ketika tidak ingin mengubah tanggal
+                'stok_tanggal' => 'required|date', 
                 'stok_jumlah'  => 'required|integer|min:1',
             ];
 
@@ -147,22 +153,29 @@ class StokController extends Controller
             }
 
             $stok = StokModel::find($id);
-            if ($stok) {
-                if (!$request->filled('stok_tanggal')) { // jika stok_tanggal tidak diisi, maka hapus dari request 
-                    $request->request->remove('stok_tanggal');
-                }
-
-                $stok->update($request->all());
-
-                return response()->json([
-                    'status'  => true,
-                    'message' => 'Data stok berhasil diupdate.',
-                ]);
-            }
+            $barang = BarangModel::find($request->barang_id);
+    
+            // Hitung selisih stok
+            $stokLama = $stok->stok_jumlah;
+            $stokBaru = $request->stok_jumlah;
+            $selisih = $stokBaru - $stokLama;
+    
+            // Update stok di tabel m_barang
+            $barang->stok += $selisih;
+            $barang->save();
+    
+            // Update data stok
+            $stok->update([
+                'stok_jumlah'  => $stokBaru,
+                'stok_tanggal' => $request->stok_tanggal,
+                'barang_id'    => $request->barang_id,
+                'supplier_id'  => $request->supplier_id,
+                'user_id'      => auth()->user()->user_id,
+            ]);
 
             return response()->json([
-                'status'  => false,
-                'message' => 'Data tidak ditemukan.',
+                'status'  => true,
+                'message' => 'Data stok berhasil diperbarui dan stok barang disesuaikan.',
             ]);
         }
 

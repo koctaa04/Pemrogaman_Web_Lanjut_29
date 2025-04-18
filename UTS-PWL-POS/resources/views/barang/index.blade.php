@@ -41,6 +41,7 @@
                         <th>ID</th>
                         <th>Kode Barang</th>
                         <th>Nama Barang</th>
+                        <th>Stok</th>
                         <th>Kategori</th>
                         <th>Aksi</th>
                     </tr>
@@ -86,6 +87,11 @@
                     },
                     {
                         data: "barang_nama",
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        data: "stok",
                         orderable: true,
                         searchable: true
                     },
