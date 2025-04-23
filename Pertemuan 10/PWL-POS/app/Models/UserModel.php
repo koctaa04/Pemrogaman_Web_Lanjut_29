@@ -14,14 +14,14 @@ class UserModel extends Authenticatable implements JWTSubject
 {
     public function getJWTIdentifier()
     {
-        return $this->getKet();
+        return $this->getKey();
     }
 
     public function getJWTCustomClaims()
     {
         return [];
     }
-    
+
     use HasFactory;
 
     protected $table = 'm_user';
