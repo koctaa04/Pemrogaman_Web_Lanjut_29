@@ -27,6 +27,10 @@
                     <th>Nama</th>
                     <td>{{ $kategori->kategori_nama }}</td>
                 </tr>
+                <tr>
+                    <th>Deskripsi</th>
+                    <td>{{ $kategori->deskripsi }}</td>
+                </tr>
             </table>
         @endempty
         </div>

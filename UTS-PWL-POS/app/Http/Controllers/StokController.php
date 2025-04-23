@@ -105,6 +105,7 @@ class StokController extends Controller
             // Update stok di tabel m_barang
             $barang = BarangModel::find($data['barang_id']);
             $barang->stok += $data['stok_jumlah'];
+
             $barang->save();
 
             return response()->json([
